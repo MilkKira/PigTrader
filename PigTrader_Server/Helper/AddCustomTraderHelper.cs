@@ -9,7 +9,8 @@ using SPTarkov.Server.Core.Utils.Cloners;
 namespace PigTrader_Server.Helper
 {
     /// <summary>
-    /// We inject this class into 'AddTraderWithDynamicAssorts' to help us with adding the new trader into the server
+    /// 商人注册辅助类。
+    /// 提供将新商人写入服务器数据库、添加刷新时间、添加本地化文字等功能。
     /// </summary>
     [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 1)]
     public class AddCustomTraderHelper(
@@ -17,15 +18,19 @@ namespace PigTrader_Server.Helper
         DatabaseService databaseService)
     {
         /// <summary>
-        /// Add the traders update time for when their offers refresh
+        /// 设置商人的库存刷新时间。
+        /// 商人的商品会在 min~max 秒的时间范围内随机刷新。
         /// </summary>
-        /// <param name="traderConfig">trader config to add our trader to</param>
-        /// <param name="baseJson">json file for trader (db/base.json)</param>
-        /// <param name="refreshTimeSecondsMin">How many seconds between trader stock refresh min time</param>
-        /// <param name="refreshTimeSecondsMax">How many seconds between trader stock refresh max time</param>
-        public void SetTraderUpdateTime(TraderConfig traderConfig, TraderBase baseJson, int refreshTimeSecondsMin, int refreshTimeSecondsMax)
+        /// <param name="traderConfig">商人配置对象（从 ConfigServer 获取）</param>
+        /// <param name="baseJson">商人的基础 JSON 数据（含 ID）</param>
+        /// <param name="refreshTimeSecondsMin">最小刷新间隔（秒）</param>
+        /// <param name="refreshTimeSecondsMax">最大刷新间隔（秒）</param>
+        public void SetTraderUpdateTime(
+            TraderConfig traderConfig,
+            TraderBase baseJson,
+            int refreshTimeSecondsMin,
+            int refreshTimeSecondsMax)
         {
-            // Add refresh time in seconds to config
             var traderRefreshRecord = new UpdateTime
             {
                 TraderId = baseJson.Id,
@@ -36,12 +41,14 @@ namespace PigTrader_Server.Helper
         }
 
         /// <summary>
-        /// Add a traders base data to the server, no assort items
+        /// 将商人以空库存的形式注册到服务器数据库。
+        /// 刚注册的商人没有商品可卖，需要通过 FluentTraderAssortCreator
+        /// 或 assord.json 补充库存。
         /// </summary>
-        /// <param name="traderDetailsToAdd">trader details</param>
+        /// <param name="traderDetailsToAdd">商人的基础配置数据</param>
         public void AddTraderWithEmptyAssortToDb(TraderBase traderDetailsToAdd)
         {
-            // Create an empty assort ready for our items
+            // 创建空库存对象
             var emptyTraderItemAssortObject = new TraderAssort
             {
                 Items = [],
@@ -49,12 +56,12 @@ namespace PigTrader_Server.Helper
                 LoyalLevelItems = new Dictionary<MongoId, int>()
             };
 
-            // Create trader data ready to add to database
+            // 组装商人完整数据
             var traderDataToAdd = new Trader
             {
                 Assort = emptyTraderItemAssortObject,
                 Base = cloner.Clone(traderDetailsToAdd),
-                QuestAssort = new() // quest assort is empty as trader has no assorts unlocked by quests
+                QuestAssort = new()
                 {
                     { "Started", new() },
                     { "Success", new() },
@@ -63,22 +70,22 @@ namespace PigTrader_Server.Helper
                 Dialogue = []
             };
 
-            // Add the new trader id and data to the server
+            // 写入数据库
             if (!databaseService.GetTables().Traders.TryAdd(traderDetailsToAdd.Id, traderDataToAdd))
             {
-                //Failed to add trader!
+                // 添加失败（ID 冲突等情况），静默处理
             }
         }
 
         /// <summary>
-        /// Add traders name/location/description to all locales (e.g. German/French/English)
+        /// 为商人添加各语言的本地化文字（名字、昵称、描述等）。
+        /// 使用 AddTransformer 延迟加载机制，确保各语言请求时都能正确包含。
         /// </summary>
-        /// <param name="baseJson">json file for trader (db/base.json)</param>
-        /// <param name="firstName">First name of trader</param>
-        /// <param name="description">Flavor text of whom the trader is</param>
+        /// <param name="baseJson">商人的基础配置（含名字、昵称、位置等）</param>
+        /// <param name="firstName">商人名（如 "Cat"、"Pig"）</param>
+        /// <param name="description">商人描述文字</param>
         public void AddTraderToLocales(TraderBase baseJson, string firstName, string description)
         {
-            // For each language, add locale for the new trader
             var locales = databaseService.GetTables().Locales.Global;
             var newTraderId = baseJson.Id;
             var fullName = baseJson.Name;
@@ -87,8 +94,7 @@ namespace PigTrader_Server.Helper
 
             foreach (var (localeKey, localeKvP) in locales)
             {
-                // We have to add a transformer here, because locales are lazy loaded due to them taking up huge space in memory
-                // The transformer will make sure that each time the locales are requested, the ones added below are included
+                // 使用 Transformer 延迟加载，避免内存占用过大
                 localeKvP.AddTransformer(lazyloadedLocaleData =>
                 {
                     lazyloadedLocaleData.Add($"{newTraderId} FullName", fullName);
@@ -102,115 +108,18 @@ namespace PigTrader_Server.Helper
         }
 
         /// <summary>
-        /// 从零开始创建一把完整的武器。
-        /// 武器以"根"物品起始
-        /// 然后拥有各种"子"物品附加在根物品上，Discord 模组支持可以帮助你弄清楚需要什么
+        /// 直接覆盖指定商人的所有库存数据（从 assord.json 读取后调用）。
         /// </summary>
-        /// <returns>一把完整的格洛克手枪</returns>
-        // public List<Item> CreateGlock()
-        // {
-        //     // Create an array ready to hold the glock and all its mods
-        //     var glock = new List<Item>();
-        //
-        //     // Add the base (root) first
-        //     glock.Add(new Item
-        //     { // Add the base weapon first
-        //         Id =
-        //         NewItemIds.GLOCK_BASE, // Ids matter, Ids MUST be unique for every item
-        //         Template = new MongoId("5a7ae0c351dfba0017554310")
-        //         , // This is the weapons tpl, found on: https://db.sp-tarkov.com/search
-        //     });
-        //
-        //     // Add barrel
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_BARREL,
-        //         Template = new MongoId("5a6b60158dc32e000a31138b"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_BASE, // This is a sub item, you need to define its parent it is attached to / inserted into
-        //         SlotId =
-        //         "mod_barrel", // Required for mods, you need to define what 'slot' the mod will fill on the weapon
-        //     });
-        //
-        //     // Add receiver
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_RECIEVER,
-        //         Template = new MongoId("5a9685b1a2750c0032157104"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_BASE,
-        //         SlotId =
-        //         "mod_reciever",
-        //     });
-        //
-        //     // Add compensator
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_COMPENSATOR,
-        //         Template =
-        //         new MongoId("5a7b32a2e899ef00135e345a"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_RECIEVER, // The parent of this mod is the receiver NOT weapon, be careful to get the correct parent
-        //         SlotId =
-        //         "mod_muzzle",
-        //     });
-        //
-        //     // Add Pistol grip
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_PISTOL_GRIP,
-        //         Template =
-        //         new MongoId("5a7b4960e899ef197b331a2d"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_BASE,
-        //         SlotId =
-        //         "mod_pistol_grip",
-        //     });
-        //
-        //     // Add front sight
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_FRONT_SIGHT,
-        //         Template =
-        //         new MongoId("5a6f5d528dc32e00094b97d9"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_RECIEVER,
-        //         SlotId =
-        //         "mod_sight_rear",
-        //     });
-        //
-        //     // Add rear sight
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_REAR_SIGHT,
-        //         Template =
-        //         new MongoId("5a6f58f68dc32e000a311390"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_RECIEVER,
-        //         SlotId =
-        //         "mod_sight_front",
-        //     });
-        //
-        //     // Add magazine
-        //     glock.Add(new Item
-        //     {
-        //         Id =
-        //         NewItemIds.GLOCK_MAGAZINE,
-        //         Template =
-        //         new MongoId("630769c4962d0247b029dc60"),
-        //         ParentId =
-        //         NewItemIds.GLOCK_BASE,
-        //         SlotId =
-        //         "mod_magazine",
-        //     });
-        //
-        //     return glock;
-        // }
+        /// <param name="traderId">目标商人ID</param>
+        /// <param name="newAssorts">新的库存数据</param>
+        public void OverwriteTraderAssort(string traderId, TraderAssort newAssorts)
+        {
+            if (!databaseService.GetTables().Traders.TryGetValue(traderId, out var traderToEdit))
+            {
+                return;
+            }
+
+            traderToEdit.Assort = newAssorts;
+        }
     }
 }
