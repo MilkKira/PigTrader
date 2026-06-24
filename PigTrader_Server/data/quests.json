@@ -1,0 +1,46 @@
+﻿[
+  {
+    "_id": "pigtrader_quest_001",
+    "traderId": "PIGTRADER_ID_PLACEHOLDER",
+    "QuestName": "Pig's Milk Run",
+    "Side": "Pmc",
+    "conditions": {
+      "AvailableForStart": [],
+      "AvailableForFinish": [
+        {
+          "_parent": "HandoverItem",
+          "_props": {
+            "target": "575146b724597720a27126d5",
+            "value": 5
+          }
+        }
+      ],
+      "Fail": []
+    },
+    "rewards": {
+      "Started": [],
+      "Success": [
+        {
+          "type": "Experience",
+          "value": 500
+        },
+        {
+          "type": "Item",
+          "items": [
+            {
+              "_id": "pigtrader_reward_001",
+              "_tpl": "575146b724597720a27126d5",
+              "count": 10
+            }
+          ]
+        },
+        {
+          "type": "TraderReputation",
+          "traderId": "PIGTRADER_ID_PLACEHOLDER",
+          "value": 0.1
+        }
+      ],
+      "Fail": []
+    }
+  }
+]
