@@ -1,7 +1,7 @@
 ﻿[
   {
-    "_id": "pigtrader_quest_001",
-    "traderId": "PIGTRADER_ID_PLACEHOLDER",
+    "_id": "6a3c905b3a13721a41f8585c",
+    "traderId": "6a3c900843f3fcef1b29024c",
     "QuestName": "Pig's Milk Run",
     "Side": "Pmc",
     "conditions": {
@@ -28,7 +28,7 @@
           "type": "Item",
           "items": [
             {
-              "_id": "pigtrader_reward_001",
+              "_id": "6a3c90446739175db432ba8f",
               "_tpl": "575146b724597720a27126d5",
               "count": 10
             }
@@ -36,7 +36,7 @@
         },
         {
           "type": "TraderReputation",
-          "traderId": "PIGTRADER_ID_PLACEHOLDER",
+          "traderId": "6a3c900843f3fcef1b29024c",
           "value": 0.1
         }
       ],

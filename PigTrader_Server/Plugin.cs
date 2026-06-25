@@ -54,16 +54,24 @@ public class PigTraderPlugin(
         var pathToMod = modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
 
         // Step 2: 加载商人头像图片路径
-        var traderImagePath = Path.Combine(pathToMod, "db/pig.jpg");
+        var traderImagePath = Path.Combine(pathToMod, "data/pig.jpg");
+        
+        logger.LogWithColor("1", LogTextColor.Green, LogBackgroundColor.Black);
 
         // Step 3: 从 data/base.json 读取商人基础配置
         var traderBase = modHelper.GetJsonDataFromFile<TraderBase>(pathToMod, "data/base.json");
+        
+        logger.LogWithColor("2", LogTextColor.Green, LogBackgroundColor.Black);
 
         // Step 4: 注册头像路由，使客户端可以加载商人头像
         imageRouter.AddRoute(traderBase.Avatar.Replace(".jpg", ""), traderImagePath);
+        
+        logger.LogWithColor("3", LogTextColor.Green, LogBackgroundColor.Black);
 
         // Step 5: 将商人加入跳蚤市场（Ragfair）可见列表
         _ragfairConfig.Traders.TryAdd(traderBase.Id, true);
+        
+        logger.LogWithColor("4", LogTextColor.Green, LogBackgroundColor.Black);
 
         // Step 6: 将商人（空库存）写入数据库
         addCustomTraderHelper.AddTraderWithEmptyAssortToDb(traderBase);
