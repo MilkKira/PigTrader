@@ -1,6 +1,5 @@
 using System.Reflection;
 
-using System.Reflection;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Utils;
@@ -34,7 +33,7 @@ public class CustomItemLoader(ISptLogger<CustomItemLoader> customlogger, global:
         customHideoutRecipeService.CreateHideoutRecipes(assembly3, Path.Join(new ReadOnlySpan<string>(ref text3)));
         try
         {
-            WeaponSlotComTool.Apply(databaseService, assembly);
+            // SalcosCompat.Apply(databaseService, assembly);
         }
         catch
         {
