@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using PigTrader_Server.CustomLoader;
 using PigTrader_Server.Helper;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
@@ -37,7 +38,8 @@ public class PigTraderPlugin(
     TimeUtil timeUtil,
     ICloner cloner,
     AddCustomTraderHelper addCustomTraderHelper,
-    CustomQuestService customQuestService
+    CustomQuestService customQuestService,
+    CustomItemLoader customItemLoader
     ) : IOnLoad
 {
     private readonly TraderConfig _traderConfig = configServer.GetConfig<TraderConfig>();
@@ -73,6 +75,9 @@ public class PigTraderPlugin(
 
         // Step 8: 从 data/quests.json 加载任务到服务器数据库
         LoadQuestsFromJson(pathToMod, traderBase.Id);
+
+
+        customItemLoader.LoadCustom();
 
         // Step 9: 输出成功日志
         logger.LogWithColor("PigTrader Loaded", LogTextColor.Green, LogBackgroundColor.Black);
