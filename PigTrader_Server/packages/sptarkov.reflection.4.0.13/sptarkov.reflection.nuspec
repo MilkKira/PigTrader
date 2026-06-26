@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>SPTarkov.Reflection</id>
+    <version>4.0.13</version>
+    <authors>Single Player Tarkov</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://sp-tarkov.com/</projectUrl>
+    <description>Reflection library for the Single Player Tarkov server.</description>
+    <copyright>Copyright (c) Single Player Tarkov 2026</copyright>
+    <repository type="Git" url="https://github.com/sp-tarkov/server-csharp" commit="2891fd41fd07b6150a2192ac0d24adb93eb72862" />
+    <dependencies>
+      <group targetFramework="net9.0">
+        <dependency id="SPTarkov.DI" version="4.0.13" exclude="Build,Analyzers" />
+        <dependency id="HarmonyX" version="2.15.0" exclude="Build,Analyzers" />
+        <dependency id="JetBrains.Annotations" version="2025.2.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

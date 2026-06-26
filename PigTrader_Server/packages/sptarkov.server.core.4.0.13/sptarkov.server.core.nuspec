@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>SPTarkov.Server.Core</id>
+    <version>4.0.13</version>
+    <authors>Single Player Tarkov</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://sp-tarkov.com/</projectUrl>
+    <description>Core library for the Single Player Tarkov server.</description>
+    <copyright>Copyright (c) Single Player Tarkov 2026</copyright>
+    <repository type="Git" url="https://github.com/sp-tarkov/server-csharp" commit="2891fd41fd07b6150a2192ac0d24adb93eb72862" />
+    <dependencies>
+      <group targetFramework="net9.0">
+        <dependency id="SPTarkov.Common" version="4.0.13" exclude="Build,Analyzers" />
+        <dependency id="SPTarkov.DI" version="4.0.13" exclude="Build,Analyzers" />
+        <dependency id="FastCloner" version="3.3.16" exclude="Build,Analyzers" />
+        <dependency id="System.IO.Hashing" version="9.0.9" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

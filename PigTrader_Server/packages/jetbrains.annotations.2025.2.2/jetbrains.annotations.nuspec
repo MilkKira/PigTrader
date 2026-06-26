@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>JetBrains.Annotations</id>
+    <version>2025.2.2</version>
+    <title></title>
+    <authors>JetBrains</authors>
+    <owners>JetBrains</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>readme.md</readme>
+    <projectUrl>https://www.jetbrains.com/help/resharper/Code_Analysis__Code_Annotations.html</projectUrl>
+    <description>JetBrains.Annotations help reduce false positive warnings, explicitly declare purity and nullability in your code, deal with implicit usages of members, support special semantics of APIs in ASP.NET and XAML frameworks and otherwise increase accuracy of JetBrains Rider and ReSharper code inspections.</description>
+    <summary>Annotations to increase accuracy of JetBrains Rider and ReSharper code inspections</summary>
+    <releaseNotes>• `[Conditional]` was removed in versions 2025.2 and 2025.2.1, but brought back in 2025.2.2 due to user feedback in #45.
+• New `JetBrains.Annotations.Sources` package introduced as an alternative way to embed JetBrains.Annotations into your C# projects without binary package dependency. All annotation types declared as `internal` and marked with `[Embedded]` attribute.
+• Added `DefaultEqualityUsageAttribute` for equality members usage analysis.
+• `MustDisposeResourceAttribute` is now allowed on struct types.
+• Added the ability to specify the description for UsedImplicitlyAttribute (new 'Reason' property).
+• Added `CqrsCommandAttribute`, `CqrsQueryAttribute`, `CqrsCommandHandlerAttribute`, `CqrsQueryHandlerAttribute` and `CqrsExcludeFromAnalysisAttribute` to support CQRS analyzes of naming and adherence to the pattern.
+• Package icon updated.</releaseNotes>
+    <copyright>Copyright (c) 2016-2025 JetBrains s.r.o.</copyright>
+    <tags>jetbrains resharper rider annotations canbenull notnull</tags>
+    <repository type="git" url="https://github.com/JetBrains/JetBrains.Annotations.git" />
+    <dependencies>
+      <group targetFramework=".NETFramework2.0" />
+      <group targetFramework=".NETPortable4.0-Profile328" />
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="System.Runtime" version="4.1.0" />
+      </group>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>
