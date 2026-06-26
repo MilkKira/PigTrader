@@ -33,10 +33,11 @@ public class CustomItemLoader(ISptLogger<CustomItemLoader> customlogger, global:
         customHideoutRecipeService.CreateHideoutRecipes(assembly3, Path.Join(new ReadOnlySpan<string>(ref text3)));
         try
         {
-            // SalcosCompat.Apply(databaseService, assembly);
+             WeaponSlotComTool.Apply(databaseService, assembly);
         }
         catch
         {
+            
         }
         customlogger.Info("[SALCO'S ARSENAL v1.0.4 successfully loaded]");
         
