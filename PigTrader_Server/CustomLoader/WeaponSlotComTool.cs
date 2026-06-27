@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -7,28 +7,18 @@ using SPTarkov.Server.Core.Services;
 namespace PigTrader_Server.CustomLoader;
 
 /// <summary>
-/// Applies slot-level filter overrides to weapon templates loaded from "Weapons/*.json" compat configs.
-/// Reads "SalcosCompat"-structured JSON files and modifies in-memory database item templates
-/// via reflection (fields/properties).
+/// 武器插槽兼容性工具。
+/// 读取 "Weapons/*.json" 中的 SalcosCompat 配置，通过反射修改内存中武器模板的插槽过滤器，
+/// 允许自定义物品兼容到特定武器插槽（如导轨、瞄具座等）。
 /// </summary>
 internal static class WeaponSlotComTool
 {
-    public static void Apply(DatabaseService databaseService, Assembly assembly)
-    {
-        var modRoot = Path.GetDirectoryName(assembly.Location) ?? "";
-        if (string.IsNullOrWhiteSpace(modRoot))
-            return;
-
-        var weaponsDir = Path.Combine(modRoot, "Weapons");
-        if (!Directory.Exists(weaponsDir))
-            return;
-
-        var compatDict = LoadCompatFromWeapons(weaponsDir);
-        if (compatDict.Count == 0)
-            return;
-
-        ApplyWeaponCompat(databaseService.GetTables().Templates.Items, compatDict);
-    }
+    /// <summary>
+    /// 异步应用武器插槽兼容性补丁。
+    /// 读取武器目录下的 JSON 配置文件，解析后通过反射写入内存数据库。
+    /// </summary>
+    /// <param name="databaseService">服务器数据库服务</param>
+    /// <param name="assembly">当前程序集（用于定位 Weapons/ 目录）</param>
     public static async Task ApplyAsync(DatabaseService databaseService, Assembly assembly)
     {
         var modRoot = Path.GetDirectoryName(assembly.Location) ?? "";
@@ -46,6 +36,11 @@ internal static class WeaponSlotComTool
         ApplyWeaponCompat(databaseService.GetTables().Templates.Items, compatDict);
     }
 
+    /// <summary>
+    /// 从 Weapons/ 目录异步读取所有 JSON 兼容配置文件。
+    /// </summary>
+    /// <param name="weaponsDir">武器目录路径</param>
+    /// <returns>武器 ID 到兼容配置的映射表</returns>
     private static async Task<Dictionary<string, WeaponSlotCompatConfig>> LoadCompatFromWeaponsAsync(string weaponsDir)
     {
         var result = new Dictionary<string, WeaponSlotCompatConfig>(StringComparer.Ordinal);
@@ -76,50 +71,18 @@ internal static class WeaponSlotComTool
             }
             catch
             {
-                // Skip malformed files
+                // 跳过格式异常的文件
             }
         }
 
         return result;
     }
 
-    private static Dictionary<string, WeaponSlotCompatConfig> LoadCompatFromWeapons(string weaponsDir)
-    {
-        var result = new Dictionary<string, WeaponSlotCompatConfig>(StringComparer.Ordinal);
-
-        var files = Directory.GetFiles(weaponsDir, "*.json", SearchOption.TopDirectoryOnly);
-        Array.Sort(files, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var file in files)
-        {
-            try
-            {
-                var json = File.ReadAllText(file);
-                if (string.IsNullOrWhiteSpace(json))
-                    continue;
-
-                var wrapper = JsonSerializer.Deserialize<WeaponSlotCompatWrapper>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                });
-
-                var config = wrapper?.SalcosCompat;
-                if (config != null && !string.IsNullOrWhiteSpace(config.Id))
-                {
-                    result[config.Id] = config;
-                }
-            }
-            catch
-            {
-                // Skip malformed files
-            }
-        }
-
-        return result;
-    }
-
+    /// <summary>
+    /// 将加载的兼容配置写入内存数据库的武器模板对象。
+    /// </summary>
+    /// <param name="itemsDict">内存中所有物品模板的字典（ID -> 物品对象）</param>
+    /// <param name="compatById">武器 ID 到兼容配置的映射表</param>
     private static void ApplyWeaponCompat(IDictionary itemsDict, Dictionary<string, WeaponSlotCompatConfig> compatById)
     {
         if (itemsDict.Count == 0 || compatById.Count == 0)
@@ -273,7 +236,7 @@ internal static class WeaponSlotComTool
         }
         catch
         {
-            // Ignore reflection errors
+            // 忽略反射错误
         }
 
         return null;
@@ -311,12 +274,12 @@ internal static class WeaponSlotComTool
         }
         catch
         {
-            // Ignore reflection errors
+            // 忽略反射错误
         }
     }
 }
 
-// --- Data Models ---
+// --- 数据模型 ---
 
 internal class WeaponSlotCompatWrapper
 {
