@@ -13,6 +13,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="data\CustomItem\Ammo\" />
+      <Folder Include="data\CustomItem\Armor\" />
+      <Folder Include="data\CustomItem\Attachments\" />
+      <Folder Include="data\CustomItem\Items\" />
+      <Folder Include="data\CustomItem\Weapons\" />
+      <Folder Include="data\CustomRecipes\" />
       <Folder Include="data\locale\" />
     </ItemGroup>
 
