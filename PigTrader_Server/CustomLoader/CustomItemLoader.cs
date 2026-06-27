@@ -11,33 +11,34 @@ namespace PigTrader_Server.CustomLoader;
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 1)]
 public class CustomItemLoader(ISptLogger<CustomItemLoader> customlogger, global::WTTServerCommonLib.WTTServerCommonLib wttCommon, DatabaseService databaseService)
 {
-    public Task LoadCustom()
+    public async Task LoadCustom()
     {
-        Assembly assembly = Assembly.GetExecutingAssembly();
-        string modRoot = Path.GetDirectoryName(assembly.Location) ?? "";
-        string[] array = new string[] { "data/CustomItem/Weapons", "data/CustomItemAmmo", "data/CustomItemAttachments", "data/CustomItemItems", "data/CustomItemArmor" };
-        foreach (string text in array)
+        await Task.Run(() =>
         {
-            if (Directory.Exists(Path.Combine(modRoot, text)))
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string modRoot = Path.GetDirectoryName(assembly.Location) ?? "";
+            string[] array = new string[] { "data/CustomItem/Weapons", "data/CustomItemAmmo", "data/CustomItemAttachments", "data/CustomItemItems", "data/CustomItemArmor" };
+            foreach (string text in array)
             {
-                WTTCustomItemServiceExtended customItemServiceExtended = wttCommon.CustomItemServiceExtended;
-                customItemServiceExtended.CreateCustomItems(assembly, Path.Join(text));
+                if (Directory.Exists(Path.Combine(modRoot, text)))
+                {
+                    WTTCustomItemServiceExtended customItemServiceExtended = wttCommon.CustomItemServiceExtended;
+                    customItemServiceExtended.CreateCustomItems(assembly, Path.Join(text));
+                }
             }
-        }
-        
-        WTTCustomHideoutRecipeService customHideoutRecipeService = wttCommon.CustomHideoutRecipeService;
-        string customRecipes = "data/CustomRecipes/Recipes";
-        customHideoutRecipeService.CreateHideoutRecipes(assembly, Path.Join(customRecipes));
+
+            WTTCustomHideoutRecipeService customHideoutRecipeService = wttCommon.CustomHideoutRecipeService;
+            string customRecipes = "data/CustomRecipes/Recipes";
+            customHideoutRecipeService.CreateHideoutRecipes(assembly, Path.Join(customRecipes));
+        }).ConfigureAwait(false);
         try
         {
-             WeaponSlotComTool.Apply(databaseService, assembly);
+            await WeaponSlotComTool.ApplyAsync(databaseService, Assembly.GetExecutingAssembly()).ConfigureAwait(false);
         }
         catch
         {
             
         }
         customlogger.LogWithColor("[PigTrader] Loaded Custom Items and Recipes]", LogTextColor.Green, LogBackgroundColor.Black);
-        
-        return Task.CompletedTask;
     }
 }

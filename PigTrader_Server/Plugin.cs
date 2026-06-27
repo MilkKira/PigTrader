@@ -50,7 +50,7 @@ public class PigTraderPlugin(
     /// 依次执行：读取配置 → 注册头像 → 注册商人 → 添加本地化 → 加载任务
     /// </summary>
     /// <returns>异步任务结果</returns>
-    public Task OnLoad()
+    public async Task OnLoad()
     {
         // Step 1: 获取模组所在文件夹的绝对路径
         var pathToMod = modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
@@ -77,12 +77,10 @@ public class PigTraderPlugin(
         LoadQuestsFromJson(pathToMod, traderBase.Id);
 
 
-        customItemLoader.LoadCustom();
+        await customItemLoader.LoadCustom();
 
         // Step 9: 输出成功日志
         logger.LogWithColor("PigTrader Loaded", LogTextColor.Green, LogBackgroundColor.Black);
-
-        return Task.CompletedTask;
     }
 
     /// <summary>

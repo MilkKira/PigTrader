@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using SPTarkov.Server.Core.Services;
 
 namespace PigTrader_Server.CustomLoader;
@@ -27,6 +28,59 @@ internal static class WeaponSlotComTool
             return;
 
         ApplyWeaponCompat(databaseService.GetTables().Templates.Items, compatDict);
+    }
+    public static async Task ApplyAsync(DatabaseService databaseService, Assembly assembly)
+    {
+        var modRoot = Path.GetDirectoryName(assembly.Location) ?? "";
+        if (string.IsNullOrWhiteSpace(modRoot))
+            return;
+
+        var weaponsDir = Path.Combine(modRoot, "Weapons");
+        if (!Directory.Exists(weaponsDir))
+            return;
+
+        var compatDict = await LoadCompatFromWeaponsAsync(weaponsDir).ConfigureAwait(false);
+        if (compatDict.Count == 0)
+            return;
+
+        ApplyWeaponCompat(databaseService.GetTables().Templates.Items, compatDict);
+    }
+
+    private static async Task<Dictionary<string, WeaponSlotCompatConfig>> LoadCompatFromWeaponsAsync(string weaponsDir)
+    {
+        var result = new Dictionary<string, WeaponSlotCompatConfig>(StringComparer.Ordinal);
+
+        var files = Directory.GetFiles(weaponsDir, "*.json", SearchOption.TopDirectoryOnly);
+        Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in files)
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(file).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(json))
+                    continue;
+
+                var wrapper = JsonSerializer.Deserialize<WeaponSlotCompatWrapper>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                });
+
+                var config = wrapper?.SalcosCompat;
+                if (config != null && !string.IsNullOrWhiteSpace(config.Id))
+                {
+                    result[config.Id] = config;
+                }
+            }
+            catch
+            {
+                // Skip malformed files
+            }
+        }
+
+        return result;
     }
 
     private static Dictionary<string, WeaponSlotCompatConfig> LoadCompatFromWeapons(string weaponsDir)
